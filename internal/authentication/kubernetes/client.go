@@ -28,10 +28,21 @@ var kubeconfig *string
 
 //nolint:gochecknoinits
 func init() {
+	var path, usage string
 	if home := homedir.HomeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+		path = filepath.Join(home, ".kube", "config")
+		usage = "(optional) absolute path to the kubeconfig file"
 	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+		path = ""
+		usage = "absolute path to the kubeconfig file"
+	}
+	// lookup if the flag was already registered to avoid panic when registering more than once
+	kcFlag := flag.Lookup("kubeconfig")
+	if kcFlag == nil {
+		kubeconfig = flag.String("kubeconfig", path, usage)
+	} else {
+		f := kcFlag.Value.String()
+		kubeconfig = &f
 	}
 }
 
